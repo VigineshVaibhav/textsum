@@ -1,0 +1,17 @@
+TEXT SUMMARIZATION
+
+Run to create needed folder
+:
+$ mkdir data graphs models embedings h5files
+
+
+Order in which to run:
+    parse_data.py
+    split_data.py
+    embed_data.py
+    process_data.py
+    train_model_seq2seq.py
+    test_mode_seq2seq.py
+
+
+Thank you for using my code! George M.
