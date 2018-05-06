@@ -17,7 +17,7 @@ import h5py
 
 '''------------------DEFINE FUNCTIONS-----------------------------'''
 
-def TrainModel(n_input, n_output, n_units, encoder_cells=0, decoder_cells=0):
+def TrainModel(n_input, n_output, n_units, encoder_cells=0, decoder_cells=0, activation='tanh'):
   """ CREATE MODEL FOR TRAINING
 
   Args:
@@ -26,6 +26,7 @@ def TrainModel(n_input, n_output, n_units, encoder_cells=0, decoder_cells=0):
       n_units       (int): number of cells to create in the encoder and decoder models, e.g. 128 or 256.
       encoder_cells (int): number of LSTM cells in encoder
       decoder_cells (int): number of LSTM cells in decoderstate
+      activ_func    (str): stirng wither softmax or tanh depending on model. By default is tanh
 
   Returns:
       model_train (model): model that can be trained given source, target, and shifted target sequences.
@@ -71,7 +72,7 @@ def TrainModel(n_input, n_output, n_units, encoder_cells=0, decoder_cells=0):
     decoder_lstm = decoder_lstm(decoder_inputs, initial_state=encoder_states)
 
   decoder_outputs, _, _ = decoder_lstm
-  decoder_dense = Dense(n_output, activation='tanh', name='DECODER_OUTPUT')
+  decoder_dense = Dense(n_output, activation=activation, name='DECODER_OUTPUT')
   decoder_outputs = decoder_dense(decoder_outputs)
 
   # create model
@@ -272,7 +273,7 @@ def FlipNumpy(np_in):
     return np_out
 
 
-def Np2H5(filename, x_emb, x_index, y_emb, y_emb_shifted, y_index):
+def Np2H5(filename, x_emb, x_index, y_emb, y_index):
 	'''
 	SAVE NUMPYS TO HDF5 FORMAT
 
@@ -294,8 +295,6 @@ def Np2H5(filename, x_emb, x_index, y_emb, y_emb_shifted, y_index):
 	print 'x_index'
 	hf.create_dataset('y_emb', data=y_emb)
 	print 'y_emb'
-	hf.create_dataset('y_emb_shifted', data=y_emb_shifted)
-	print 'y_emb_shifted'
 	hf.create_dataset('y_index', data=y_index)
 	print 'y_index'
 	hf.close()
@@ -314,21 +313,19 @@ def H52Np(filename):
                 x_emb 		(numpy): input numpy
                 x_index 	(numpy): input numpy
                 x_emb 		(numpy): input numpy
-                y_emb_shifted 	(numpy): shifted output numpy used as input
                 y_index 	(numpy): target output numpy
 
 	'''
 	hf = h5py.File(filename, 'r')	# read .h5 file
 	keys = hf.keys()		# keys of each saved numpy
-	if len(keys) != 5:
+	if len(keys) != 4:
 		print 'Wrong .h5 files!'
 		return
 	x_emb 		= hf.get(keys[0])
 	x_index 	= hf.get(keys[1])
 	y_emb 		= hf.get(keys[2])
-	y_emb_shifted 	= hf.get(keys[3])
-	y_index 	= hf.get(keys[4])
-	return x_emb, x_index, y_emb, y_emb_shifted, y_index
+	y_index 	= hf.get(keys[3])
+	return x_emb, x_index, y_emb, y_index
 
 
 def Cosim(a, b):

@@ -27,11 +27,9 @@ def ProcessData(path_h5, contents, titles, word_index, emb_dict, n_in, emb_dim):
     print '\ty_emb y_index Done!'
     del titles
 
-    # create shifted output values
-    y_emb_shifted = ShiftRight(y_emb)
 
     print '\t Saving all numpys...'
-    Np2H5(path_h5, x_emb, x_index, y_emb, y_emb_shifted, y_index)
+    Np2H5(path_h5, x_emb, x_index, y_emb, y_index)
     print '\tDone!'
     print 'Numpy Data Finished!\n'
 
@@ -40,7 +38,6 @@ def ProcessData(path_h5, contents, titles, word_index, emb_dict, n_in, emb_dim):
 
     print y_emb.shape
     print y_index.shape
-    print y_emb_shifted.shape
     del x_emb, x_index, y_emb, y_index  # clean memory
     print '%s %s Finished Processing!\n'%(media, partition_type)
 
