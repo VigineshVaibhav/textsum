@@ -378,15 +378,15 @@ def Emb2Word(array_emb, emb_dict):
                 word (string): possibl word of inputed embeding
 
         '''
-        sim_word = []   # most similar word
+        sim_word = {}   # most similar word
         n_input = len(array_emb)
         sim =[[0,''] for _ in range(n_input)]   # cosimilarity is between 0-1. Most similar is 1
 
         for word, emb in emb_dict.items():
-                cosim = [Cosim(word_emb, emb) for word_emb in array_emb]
+                cosim = [Cosim(array_emb, emb)]
                 sim = [[y,word] if x[0] < y else x for x,y in zip(sim,cosim)]
 
-        return [[w[1]] for w in sim]	# returns word
+        return [w[1] for w in sim]	# returns word
 
 
 

@@ -1,4 +1,5 @@
 #imports
+import sys
 from functions_textsum import *
 
 from random import randint
@@ -48,6 +49,7 @@ print 'Finished!\n'
 ''' LOAD EMBEDINGS AND INDEXES'''
 print '\nUnPickle emb_dict...'
 emb_dict = UnPickleDict(path_emb_dict)
+
 print 'Finished!\n'
 
 print '\nUnPickle data..'
