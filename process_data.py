@@ -3,6 +3,7 @@ import sys
 from functions_textsum import UnPickleData, UnPickleDict, NumpyData, ShiftRight, Np2H5
 from keras.preprocessing.text import text_to_word_sequence
 from keras.preprocessing.text import Tokenizer
+from keras.utils import to_categorical                      # for one-hot encodding
 import numpy as np
 
 
@@ -14,18 +15,41 @@ path_test = './data/News_size:10545_tokens:50_type:TEST_DATA.pickle'
 
 path_emb_dict = './embedings/ALL_words:139667_type:EMBED_DICTONARY.pickle'
 
+n_words = 40000     # only use top n_words most frequent
+
 def ProcessData(path_h5, contents, titles, word_index, emb_dict, n_in, emb_dim):
     '''------------------NUMPY DATA------------------------------'''
     print '\nNumpy Data....'
     # Create Numpy of input data for index and embeddings
     x_emb, x_index = NumpyData(contents, word_index, emb_dict, n_input=n_in, n_emb=emb_dim)
     print '\tx_emb x_index Done!'
+
+
     del contents
 
     # Create Numpy output data for index and embeddings
     y_emb, y_index = NumpyData(titles, word_index, emb_dict, n_input=n_out, n_emb=emb_dim)
     print '\ty_emb y_index Done!'
-    del titles
+    #del titles
+
+    print y_index[0]
+    print titles[0]
+    print len(y_emb[0])
+
+    print len(titles[0])
+    max_index = np.amax(y_index) + 1        # +1 because word index starts from 0
+    y_hot = []
+
+    for index_title in y_index:
+        encoded = to_categorical(index_title, num_classes=max_index)
+        y_hot.append(encoded)
+        del encoded
+
+    print y_hot[0][3][:15]
+    print len(y_hot[0])
+    print 'max ',np.amax(y_index)
+
+    sys.exit()
 
 
     print '\t Saving all numpys...'
@@ -77,11 +101,18 @@ t = Tokenizer(num_words=None)
 print 'Fitting tokenizer to text...'
 t.fit_on_texts(contents + titles)
 print 'Creating word index dictionary...'
-word_index = t.word_index
+word_index = {}
+for word, index in (t.word_index).items:
+    # Use only top n_words
+    if index > n_words:
+        continue
+    word_index[word]
 del t
-vocab_size = len(word_index) + 1
+word_index['<UNK>'] = n_words + 1   # add unknown word index at the end of word index
+word_index['<EOS>'] = n_words + 1   # add EOS at the end of words index
+word_index[''] = 0                  # add zero to word index used when padding with zero
 
-print 'Vocabulary size: ',vocab_size
+print 'Vocabulary size: ',len(word_index.items)
 
 print 'Finsihed!\n'
 

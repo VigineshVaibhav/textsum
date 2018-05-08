@@ -219,24 +219,46 @@ def UnPickleDict(filepath):
         return output
 
 # Function takes input data and outputs numpy_emb numpy_index
-def NumpyData(data, word_index, emb_dict, n_input, n_emb):
-        data_size = len(data)
-        # Create empty numpy arrays
-        np_emb = np.zeros((data_size, (n_input + 2), n_emb), dtype=float)
-        np_index = np.zeros((data_size, (n_input + 2)), dtype=int)
+def NumpyData(data, word_index, emb_dict, n_input, n_emb, s_flag=False, e_flag=False):
+    '''
+        Get embedding and index only if exists
+        If any of them don't exist replace with <UNK> embedding and index
+    '''
+    data_size = len(data)
+    n_words = len(word_index.items)
+    # Create empty numpy arrays
+    np_emb = np.zeros((data_size, (n_input + 2), n_emb), dtype=float)
+    np_hot = np.zeros((data_size, (n_input + 2), n_words), dtype=int)
+    offset = 0      # offset use when adding flag
 
-        # ia - index of article
-        # iw - index for word of each article
-        for ia, article in enumerate(data):
-                # Add start flag
-                np_emb[ia][0] = emb_dict['<Start>']
-                for iw, word in enumerate(article):
-                    if word in emb_dict:
-                        np_emb[ia][iw+1] =emb_dict[word]
-                    if word in word_index:
-                        np_index[ia][iw+1] = word_index[word]
-                # Add end flag
-                np_emb[ia][len(article)+1] = emb_dict['<End>']
+    # ia - index of article
+    # iw - index for word of each article
+    for ia, article in enumerate(data):
+        if s_flag:
+            # Add start flag
+            np_emb[ia][0] = emb_dict['<EOS>']
+            np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+            offset = 1
+
+        for iw, word in enumerate(article):
+            if word in emb_dict:
+                # word in embedding
+                np_emb[ia][iw + offset] = emb_dict[word]
+            else:
+                # we deal with unknown words
+                np_emb[ia][iw + offset] =emb_dict['<UNK>']
+            if word in word_index:
+                # check word_index
+                np_hot[ia][iw + offset] = to_categorical(word_index['<UNK>'], num_classes=n_words)
+            else:
+                # we deal with unknown words
+                np_hot[ia][iw + offset] = to_categorical(word_index['<UNk>'], num_classes=n_words)
+
+        if e_flag:
+            # Add end flag
+            np_emb[ia][len(article)+1] = emb_dict['<EOS>']
+            np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+
         return np_emb, np_index
 
 

@@ -10,50 +10,21 @@ from functions_textsum import *
 import random
 
 
+path_data = './data/News_size:25818_tokens:50_type:TRAIN_DATA.pickle'
+path_numpy = './h5files/News_size:25818_tokens:50_type:TRAIN_NUMPYS.h5'
 
-path_google_model = './embedings/GoogleNews-vectors-negative300.bin'
+''' READING INPUT '''
+print '\nReading H5 file to numpys...'
+x_emb, x_index, y_emb, y_index = H52Np(path_numpy)
+print 'Finished!\n'
 
-def FlipNumpy(np_in):
-    # flip numpy on axis 1
-    np_flip = np.flip(np_in, 1)
-    np_out = np.zeros(np_in.shape)
-    for i_l, line in enumerate(np_flip):
-        offset = 0
-        for i_v, value in enumerate(line):
-            if value == 0:
-                offset += 1
-                continue
-            else:
-                np_out[i_l][i_v - offset] = value
-    del np_flip
-    return np_out
+print '\nUnPickle data..'
+contents, titles = UnPickleData(path_data)
+print 'Finsihed!\n'
 
-a = np.ones(300)
-b = np.random.random(300)
-start = '-#,##_-#,##'
-end = '##,###.#_##,###.#_##,###.#_##,###.#'
+print len(x_emb[1])
+print len(contents[1])
 
-print '\nLoad Word2Vec model using Gensim...'
-google_model = KeyedVectors.load_word2vec_format(path_google_model, binary=True)
-google_dict = {}
-vocab = list(google_model.vocab)
-for word in vocab:
-	#wrd = word.lower()
-	google_dict[word] = google_model[word]
-del google_model
-print 'Finished Loading %s word embeddings!'%(len(google_dict.items()))
-
-
-emb_dict = UnPickleDict('./embedings/ALL_words:139665_type:EMBED_DICTONARY.pickle')
-m = float('-inf')
-w = ''
-e = None
-for word, emb in emb_dict.items():
-    if word == start:
-            print word
-            print emb
-    if word == end:
-        print emb
-        print word
-
-print 'end'
+print x_index[1]
+print contents[1]
+print '\n\nend'

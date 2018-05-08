@@ -22,8 +22,8 @@ path_google_model = './embedings/GoogleNews-vectors-negative300.bin'
 
 path_emb_dict = './embedings/'
 
-start_flag = '-#,##_-#,##'
-end_flag = '##,###.#_##,###.#_##,###.#_##,###.#'
+unknown_flag = '-#,##_-#,##'                        # unknown word embedding
+eos_flag = '##,###.#_##,###.#_##,###.#_##,###.#'     # End Of Sequence embedding
 
 print '\nUnPickle data...'
 corpus_set = set()      # set of all words in corpus
@@ -70,24 +70,24 @@ for word in corpus_set:    # look in all corpus (train + test)
         emb_dict[word] = google_dict[word]
 
 
-if start_flag in emb_dict:
-    print '\nError Start Flag!\n'
+if unknown_flag in emb_dict:
+    print '\nError Unknown Flag!\n'
     sys.exit()
-elif start_flag in google_dict:
-    emb_dict['<Start>'] = google_dict[start_flag]
-    print '\nStart Flag Added!\n'
+elif unknown_flag in google_dict:
+    emb_dict['<UNK>'] = google_dict[unknown_flag]
+    print '\nUnknown Flag Added!\n'
 else:
-    print '\nError Start Flag!\n'
+    print '\nError Unknown Flag!\n'
     sys.exit()
 
-if end_flag in emb_dict:
-    print '\nError End Flag!\n'
+if eos_flag in emb_dict:
+    print '\nError EOS Flag!\n'
     sys.exit()
-elif end_flag in google_dict:
-    emb_dict['<End>'] = google_dict[end_flag]
-    print '\nEnd Flag Added!\n'
+elif eos_flag in google_dict:
+    emb_dict['<EOS>'] = google_dict[eos_flag]
+    print '\nEOS Flag Added!\n'
 else:
-    print '\nError End Flag!\n'
+    print '\nError EOS Flag!\n'
     sys.exit()
 
 del google_dict
