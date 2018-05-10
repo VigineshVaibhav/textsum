@@ -21,7 +21,15 @@ def ProcessData(path_h5, contents, titles, word_index, emb_dict, n_in, emb_dim):
     '''------------------NUMPY DATA------------------------------'''
     print '\nNumpy Data....'
     # Create Numpy of input data for index and embeddings
-    x_emb, x_index = NumpyData(contents, word_index, emb_dict, n_input=n_in, n_emb=emb_dim)
+    x_emb, x_hot = NumpyData(contents, word_index, emb_dict, n_input=n_in, n_emb=emb_dim)
+    print len(x_emb[0][0])
+    print len(x_hot[0][0])
+    word =  contents[0][0]
+    print word
+    print word_index[word]
+    print x_hot[0][0][34020:34030]
+    print x_hot.shape, x_emb.shape
+    sys.exit()
     print '\tx_emb x_index Done!'
 
 
@@ -90,6 +98,8 @@ print '\n\n------------PROCESSING %s %s DATA--------------\n'%(media, partition_
 
 '\nUnPickle data...'
 contents, titles = UnPickleData(path_train)     # train contents and titles
+contents = contents[10000]
+titles = titles[10000]
 print 'UnPickle Finished!\n'
 
 data_size = len(titles)
@@ -102,17 +112,19 @@ print 'Fitting tokenizer to text...'
 t.fit_on_texts(contents + titles)
 print 'Creating word index dictionary...'
 word_index = {}
-for word, index in (t.word_index).items:
-    # Use only top n_words
+
+for word, index in t.word_index.items():
+    #index = t.word_index
     if index > n_words:
         continue
-    word_index[word]
+    word_index[word] = index
 del t
 word_index['<UNK>'] = n_words + 1   # add unknown word index at the end of word index
 word_index['<EOS>'] = n_words + 1   # add EOS at the end of words index
 word_index[''] = 0                  # add zero to word index used when padding with zero
+print 'LEN ',len(word_index.items())
 
-print 'Vocabulary size: ',len(word_index.items)
+print 'Vocabulary size: ',len(word_index.items())
 
 print 'Finsihed!\n'
 

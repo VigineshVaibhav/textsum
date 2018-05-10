@@ -225,41 +225,67 @@ def NumpyData(data, word_index, emb_dict, n_input, n_emb, s_flag=False, e_flag=F
         If any of them don't exist replace with <UNK> embedding and index
     '''
     data_size = len(data)
-    n_words = len(word_index.items)
+    n_words = len(word_index.items())
     # Create empty numpy arrays
-    np_emb = np.zeros((data_size, (n_input + 2), n_emb), dtype=float)
-    np_hot = np.zeros((data_size, (n_input + 2), n_words), dtype=int)
+#    np_emb = np.zeros((data_size, (n_input + 2), n_emb), dtype=float)
+#    np_hot = np.zeros((data_size, (n_input + 2), n_words), dtype=int)
+
+    np_emb = []
+    np_hot = []
     offset = 0      # offset use when adding flag
+    n_input += 1    # add size for flags
 
     # ia - index of article
     # iw - index for word of each article
     for ia, article in enumerate(data):
+        seq_emb = []
+        seq_hot = []
         if s_flag:
             # Add start flag
-            np_emb[ia][0] = emb_dict['<EOS>']
-            np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+            #np_emb[ia][0] = emb_dict['<EOS>']
+            #np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+            seq_emb.append(emb_dict['<EOS>'])
+            seq_hot.append(to_categorical(word_index['<EOS>'], num_classes=n_words))
             offset = 1
 
         for iw, word in enumerate(article):
             if word in emb_dict:
                 # word in embedding
-                np_emb[ia][iw + offset] = emb_dict[word]
+#                np_emb[ia][iw + offset] = emb_dict[word]
+                seq_emb.append(emb_dict[word])
+
             else:
                 # we deal with unknown words
-                np_emb[ia][iw + offset] =emb_dict['<UNK>']
+#                np_emb[ia][iw + offset] =emb_dict['<UNK>']
+                seq_emb.append(emb_dict['<UNK>'])
             if word in word_index:
                 # check word_index
-                np_hot[ia][iw + offset] = to_categorical(word_index['<UNK>'], num_classes=n_words)
+#                np_hot[ia][iw + offset] = to_categorical(word_index['<UNK>'], num_classes=n_words)
+                seq_hot.append(to_categorical(word_index[word], num_classes=n_words))
             else:
                 # we deal with unknown words
-                np_hot[ia][iw + offset] = to_categorical(word_index['<UNk>'], num_classes=n_words)
+#                np_hot[ia][iw + offset] = to_categorical(word_index['<UNK>'], num_classes=n_words)
+                seq_hot.append(to_categorical(word_index['<UNK>'], num_classes=n_words))
 
         if e_flag:
             # Add end flag
-            np_emb[ia][len(article)+1] = emb_dict['<EOS>']
-            np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+#            np_emb[ia][len(article)+1] = emb_dict['<EOS>']
+#            np_hot[ia][0] = to_categorical(word_index['<EOS>'], num_classes=n_words)
+            seq_emb.append(emb_dict['<EOS>'])
+            seq_hot.append(to_categorical(word_index['<EOS>'], num_classes=n_words))
 
-        return np_emb, np_index
+        size = len(seq_emb)
+        pad = list(np.zeros(n_emb, dtype=int))
+        [seq_emb.append(pad) for _ in range(n_input - size)]   # pad sequence
+
+        size = len(seq_hot)
+        pad = list(np.zeros(n_words, dtype=int))
+        [seq_hot.append(pad) for _ in range(n_input - size)]   # pad sequence
+
+        np_emb.append(seq_emb)
+        np_hot.append(seq_hot)
+        del seq_emb, seq_hot
+    return np.array(np_emb), np.array(np_hot)
 
 
 # Shift matrix by 1
@@ -295,17 +321,15 @@ def FlipNumpy(np_in):
     return np_out
 
 
-def Np2H5(filename, x_emb, x_index, y_emb, y_index):
+def Np2H5(filename, x_emb, y_emb, y_hot):
 	'''
 	SAVE NUMPYS TO HDF5 FORMAT
 
 	Args:
 		filename (string): name and path of .h5 file
 		x_emb (numpy): input numpy
-		x_index
 		y_emb
-		y_emb_shifted
-		y_index
+		y_hot
 	Returns:
 
 	'''
@@ -313,12 +337,10 @@ def Np2H5(filename, x_emb, x_index, y_emb, y_index):
 	hf = h5py.File(filename, 'w')
 	hf.create_dataset('x_emb', data=x_emb)
 	print 'x_emb'
-	hf.create_dataset('x_index', data=x_index)
-	print 'x_index'
 	hf.create_dataset('y_emb', data=y_emb)
 	print 'y_emb'
-	hf.create_dataset('y_index', data=y_index)
-	print 'y_index'
+	hf.create_dataset('y_index', data=y_hot)
+	print 'y_hot'
 	hf.close()
 	print 'hdf5 closed!\n'
 	return
@@ -344,10 +366,9 @@ def H52Np(filename):
 		print 'Wrong .h5 files!'
 		return
 	x_emb 		= hf.get(keys[0])
-	x_index 	= hf.get(keys[1])
-	y_emb 		= hf.get(keys[2])
-	y_index 	= hf.get(keys[3])
-	return x_emb, x_index, y_emb, y_index
+	y_emb 		= hf.get(keys[1])
+	y_hot 	    = hf.get(keys[2])
+	return x_emb, y_emb, y_hot
 
 
 def Cosim(a, b):

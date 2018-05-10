@@ -25,6 +25,9 @@ filename = './predictions/News_target_predict_50tokens_5size.pickle'
 
 target, predicted = UnPickleOut(filename)
 
+
+
+
 blu = []
 for y, y_hat in zip(target, predicted):
 	t = [w.encode("utf-8") for w in y]
