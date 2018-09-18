@@ -5,7 +5,7 @@ This project aims to generate headlines for news articles from their content. Th
 
 _Note: This project is still a work in progress, with refinements and updates being added regularly._
 
-## Command to create needed folder ##
+## Commands to create the needed folder ##
 
 $ mkdir data graphs models embedings h5files
 
