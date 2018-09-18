@@ -3,8 +3,6 @@
 
 This project aims to generate headlines for news articles from their content. This could (potentially) be extended to summarize any form of text succintly.
 
-_Note: This project is still a work in progress, with refinements and updates being added regularly._
-
 ## Commands to create the needed folder ##
 
 $ mkdir data graphs models embedings h5files
